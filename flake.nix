@@ -24,5 +24,7 @@
         overlays = [ self.overlay ];
       }).speelycaptor);
 
+      nixosModules.speelycaptor = import ./module.nix;
+
     };
 }

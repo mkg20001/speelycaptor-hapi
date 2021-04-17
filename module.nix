@@ -49,7 +49,7 @@ in
 
       description = "Speelycaptor server";
 
-      Environment.CONFIG = with builtins; toFile "config.json" (toJSON {
+      environment.CONFIG = with builtins; toFile "config.json" (toJSON {
         hapi.port = cfg.port;
         externalUrl = cfg.externalUrl;
         tmpFolder = if cfg.tmpFolder != null then cfg.tmpFolder else null;

@@ -1,9 +1,9 @@
 'use strict'
 
-/* eslint-disable guard-for-in */
-/* eslint-disable no-loop-func */
+/* eslint-disable no-negated-condition */
 
 const Hapi = require('@hapi/hapi')
+const Boom = require('@hapi/boom')
 const Joi = require('@hapi/joi')
 const fs = require('fs')
 const crypto = require('crypto')
@@ -17,7 +17,7 @@ const VIDEO_MAX_DURATION = 600
 
 const prom = fnc => new Promise((resolve, reject) => fnc((err, res) => err ? reject(err) : resolve(res)))
 
-const randName = () => crypto.randomBytes(64).toString('hex')
+const createKey = () => crypto.randomBytes(64).toString('hex')
 
 const pino = require('pino')
 const log = pino({ name: 'speelycaptor' })
@@ -83,6 +83,75 @@ function removeFile (localFilePath) {
   return prom(cb => fs.unlink(localFilePath, cb))
 }
 
+function tmpTracker (location) {
+  const storage = path.join(location, 'config.json')
+  const db = fs.existsSync(storage) ? JSON.parse(String(fs.readFileSync(storage))) : {}
+
+  const f = k => path.join(location, `file_${k}`)
+
+  function write () {
+    fs.writeFileSync(storage, db)
+  }
+
+  async function check () {
+    const now = Date.now()
+
+    const rm = []
+
+    for (const key in db) {
+      if (db[key] < now) {
+        const p = f(key)
+        if (fs.existsSync(p)) {
+          rm.push(removeFile(p))
+        }
+        delete db[key]
+      }
+    }
+
+    await Promise.all(rm)
+    write()
+  }
+
+  setInterval(check, 60 * 1000).unref()
+
+  return {
+    getNew (expiresInSeconds, ext = 'tmp') {
+      const key = createKey() + '.' + ext
+      db[key] = Date.now() + (expiresInSeconds * 1000)
+      write()
+
+      return {
+        path: f(key),
+        key
+      }
+    },
+    async delTmp (key) {
+      if (!db[key]) {
+        return
+      }
+
+      const p = f(key)
+
+      if (fs.existsSync(p)) {
+        await removeFile(p)
+      }
+
+      delete db[key]
+      write()
+    },
+    getKey (key) {
+      if (!db[key]) {
+        throw Boom.badRequest('Specified file key invalid')
+      }
+
+      return {
+        path: f(key),
+        key
+      }
+    }
+  }
+}
+
 const init = async config => {
   config.hapi.routes = {
     validate: {
@@ -93,6 +162,7 @@ const init = async config => {
   rimraf(config.tmpFolder)
   mkdirp(config.tmpFolder)
   const tmp = fs.realpathSync(config.tmpFolder)
+  const tracked = tmpTracker(tmp)
   const { externalUrl } = config
   const server = Hapi.server(config.hapi)
 
@@ -114,144 +184,85 @@ const init = async config => {
 
   // main logic
 
-  /* for (const form in config.forms) {
-    const formConfig = config.forms[form]
+  server.route({
+    method: 'GET',
+    path: '/init',
+    config: {
+      handler: async (req, h) => {
+        const input = tracked.getNew(240)
 
-    const mailConfig = Object.assign(Object.assign({}, mainMailConfig), formConfig.mail) // we can't prefill defaults with joi in subconfig because default override main so we prefill them in main and clone+override that here
-
-    const validatorInner = Object.keys(formConfig.fields).reduce((out, field) => {
-      const fieldConfig = formConfig.fields[field] // TODO: prefill defaults with joi
-
-      let v
-
-      switch (fieldConfig.type) {
-        case 'string': {
-          v = Joi.string()
-
-          if (fieldConfig.required) {
-            v = v.required()
-          }
-
-          if (fieldConfig.maxLen) {
-            v = v.max(fieldConfig.maxLen)
-          }
-
-          if (fieldConfig.minLen) {
-            v = v.min(fieldConfig.minLen)
-          }
-          break
-        }
-
-        case 'file': {
-          v = Joi.any() // TOOD: add file validator
-          break
-        }
-
-        default: {
-          throw new TypeError(fieldConfig.type)
+        return {
+          uploadUrl: `${externalUrl}/push/${input.key}`,
+          key: input.key
         }
       }
-
-      out[field] = v
-
-      return out
-    }, {})
-
-    let validator = Joi.object(validatorInner)
-
-    if (formConfig.appendGeneric) {
-      validator = validator.pattern(/./, Joi.string().min(1).max(1024)) // TODO: rethink if string or allow all, but string with def should be good
     }
+  })
 
-    validator = validator.required()
+  // S3 Simulator 2021 Edition
 
-    await server.route({
-      method: 'POST',
-      path: '/' + form,
-      config: {
-        payload: {
-          multipart: {
-            output: 'stream'
-          },
-          * maxBytes: 209715200,
-          output: 'stream',
-          parse: true, *
-          output: 'stream',
-          parse: true,
-          allow: 'multipart/form-data'
-        },
-        handler: async (h, reply) => {
-          const { payload: params } = h
+  server.route({
+    method: 'POST',
+    path: '/push/{key}',
+    /* payload: {
+      multipart: {
+        output: 'stream'
+      },
+      output: 'stream',
+      parse: true,
+      allow: 'multipart/form-data'
+    }, */
+    config: {
+      handler: async (req, h) => {
+        const { key } = req.params
 
-          for (const key in params) {
-            params[key] = escape(params[key])
-          }
+        const input = tracked.getKey(key)
 
-          const values = Object.keys(params).reduce((out, key) => {
-            out[key.toUpperCase()] = handleField(formConfig.fields[key] || fieldDefault, key, params[key])
-
-            return out
-          }, {})
-
-          for (const key in values) {
-            values[key] = await values[key] // resolve promises
-          }
-
-          if (formConfig.appendGeneric) {
-            values._GENERIC = Object.keys(params).filter(key => Boolean(formConfig.fields[key])).map(key => `${key}:\n\n${params[key]}`).join('\n\n')
-          }
-
-          const mail = Object.assign({}, mailConfig)
-
-          if (formConfig.text) {
-            mail.text = formConfig.text
-          }
-
-          if (formConfig.html) {
-            mail.html = formConfig.html
-            // TODO: add nodemailer plugin that transforms html to text if no text
-          }
-
-          // NOTE: html fallback is already covered by plugin
-
-          // render all keys, including subject
-          for (const key in mail) {
-            mail[key] = renderTemplate(mail[key], values)
-          }
-
-          if (!mail.html) {
-            mail.html = mail.text.replace(/(\r\n|\n)/g, '<br>') // fallback
-          }
-
-          const res = await mailer.sendMail(mail) // NOTE: this only says "mail is now in queue and being processed" not "it arrived"
-
-          return { ok: true, msgId: res.messageId } // TODO: should we expose this? it's good for tracking since that's something "an email" can be referred to, but fairly useless to the customer... could be displayed as "keep that" or sth
-        },
-        validate: {
-          payload: validator
-        }
+        // TODO: handle file post properly and move to input.path
       }
-    })
-  }
+    }
+  })
 
   server.route({
     method: 'GET',
-    path: '/file/{filename}',
+    path: '/pull/{key}',
     config: {
-      validate: {
-        params: Joi.object({
-          filename: Joi.string().pattern(/[a-z0-9.]/mi)
-        })
-      },
-      handler: (request, h) => {
-        return h.file(path.join(storagePath, request.params.filename), {
-          confine: false
-        })
+      handler: async (req, h) => {
+        const { key } = req.params
+
+        const output = tracked.getKey(key)
+
+        return h.file(output.path, { confine: false })
       }
     }
+  })
 
-  }) */
+  server.route({
+    method: 'POST',
+    path: '/convert',
+    config: {
+      handler: async (req, h) => {
+        const { key, args } = req.query
+        // key=file id
+        // args=ffmpeg args
 
+        const input = tracked.getKey(key)
+        const output = tracked.getNew(240)
+
+        await ffmpeg(args, input.path, output.path)
+
+        return {
+          url: `${externalUrl}/pull/${output.key}`
+        }
+      },
+      validate: {
+        query: Joi.object({
+          key: Joi.string().required(),
+          args: Joi.string().required()
+        }).options({ stripUnknown: true })
+      }
+    }
+  })
   async function stop () {
     await server.stop()
   }

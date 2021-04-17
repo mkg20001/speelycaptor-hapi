@@ -49,14 +49,15 @@ in
 
       description = "Speelycaptor server";
 
+      Environment.CONFIG = toFile "config.json" (toJSON {
+        hapi.port = cfg.port;
+        externalUrl = cfg.externalUrl;
+        tmpFolder = if cfg.tmpFolder != null then cfg.tmpFolder else null;
+      });
+
       serviceConfig = {
         Type = "simple";
         DynamicUser = true;
-        Environment.CONFIG = toFile "config.json" (toJSON {
-          hapi.port = cfg.port;
-          externalUrl = cfg.externalUrl;
-          tmpFolder = if cfg.tmpFolder != null then cfg.tmpFolder else null;
-        });
         ReadWritePaths = if cfg.tmpFolder != null then cfg.tmpFolder else "";
         ExecStart = "${speelycaptor}/bin/speelycaptor";
       };

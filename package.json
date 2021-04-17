@@ -12,7 +12,10 @@
   "template": {
     "extends": [
       "nodeEslint"
-    ]
+    ],
+    "node": {
+      "noNodeLock": true
+    }
   },
   "keywords": [
     "speelycaptor",

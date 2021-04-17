@@ -19,8 +19,8 @@ in
 
       tmpFolder = mkOption {
         description = "Alternative folder to use for temporary storage";
-        type = types.path;
-        default = "";
+        type = types.nullOr types.path;
+        default = null;
       };
 
       externalUrl = mkOption {
@@ -55,9 +55,9 @@ in
         Environment.CONFIG = toFile "config.json" (toJSON {
           hapi.port = cfg.port;
           externalUrl = cfg.externalUrl;
-          tmpFolder = if cfg.tmpFolder != "" then cfg.tmpFolder else null;
+          tmpFolder = if cfg.tmpFolder != null then cfg.tmpFolder else null;
         });
-        ReadWritePaths = if cfg.tmpFolder != "" then cfg.tmpFolder else "";
+        ReadWritePaths = if cfg.tmpFolder != null then cfg.tmpFolder else "";
         ExecStart = "${speelycaptor}/bin/speelycaptor";
       };
     };

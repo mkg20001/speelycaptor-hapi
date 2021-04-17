@@ -52,9 +52,9 @@ in
       environment.CONFIG = with builtins; toFile "config.json" (toJSON ({
         hapi.port = cfg.port;
         externalUrl = cfg.externalUrl;
-      } // (mkIf (cfg.tmpFolder != null) {
+      } // (if (cfg.tmpFolder != null) then {
         tmpFolder = cfg.tmpFolder;
-      })));
+      } else {})));
 
       serviceConfig = {
         Type = "simple";

@@ -1,6 +1,6 @@
 {
   "name": "speelycaptor-hapi",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Mozilla Hubs Speelycaptor service rewritten with just hapiJS for self-hosting",
   "main": "index.js",
   "scripts": {

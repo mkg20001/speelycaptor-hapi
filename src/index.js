@@ -90,7 +90,7 @@ function tmpTracker (location) {
   const f = k => path.join(location, `file_${k}`)
 
   function write () {
-    fs.writeFileSync(storage, db)
+    fs.writeFileSync(storage, JSON.stringify(db))
   }
 
   async function check () {
@@ -115,8 +115,8 @@ function tmpTracker (location) {
   setInterval(check, 60 * 1000).unref()
 
   return {
-    getNew (expiresInSeconds, ext = 'tmp') {
-      const key = createKey() + '.' + ext
+    getNew (expiresInSeconds) {
+      const key = createKey()
       db[key] = Date.now() + (expiresInSeconds * 1000)
       write()
 

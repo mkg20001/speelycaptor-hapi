@@ -14,7 +14,7 @@ require('mkg-bin-gen')(
       hapi: Joi.object({
         host: Joi.string().default('::'),
         port: Joi.number().integer().default(34221)
-      }).pattern(/./, Joi.any()).default({ host: '::', port: 34221 }).required(),
+      }).pattern(/./, Joi.any()).required(),
       tmpFolder: Joi.string().default(path.join(os.tmpdir(), 'speelycaptor')),
       externalUrl: Joi.string().uri().required()
     })

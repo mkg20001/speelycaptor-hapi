@@ -1,0 +1,5 @@
+hapi:
+  port: 1234 # choose your own and put it behind a reverse proxy
+externalUrl: 'https://speelycaptor.your-server.tld' # put the external URL (behind reverse proxy) here
+# optional: put the temporary files somewhere else
+# tmpFolder: '/storage/speelycaptor-tmp'

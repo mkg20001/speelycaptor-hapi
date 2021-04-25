@@ -2,7 +2,7 @@
 , lib
 , drvSrc ? ./.
 , mkNode
-, nodejs-14_x
+, nodejs-16_x
 , makeWrapper
 , ffmpeg
 }:

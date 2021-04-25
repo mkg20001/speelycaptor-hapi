@@ -26,7 +26,7 @@ in
       externalUrl = mkOption {
         description = "External URL to use for submissions";
         type = types.str;
-        default = "http://localhost:34221";
+        default = "http://localhost:${toString cfg.port}";
       };
 
       openFirewall = mkOption {

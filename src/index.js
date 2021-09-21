@@ -4,7 +4,7 @@
 
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
-const Joi = require('@hapi/joi')
+const Joi = require('joi')
 const fs = require('fs')
 const crypto = require('crypto')
 const rimraf = require('rimraf').sync
@@ -22,7 +22,7 @@ const createKey = () => crypto.randomBytes(64).toString('hex')
 const pino = require('pino')
 const log = pino({ name: 'speelycaptor' })
 
-const Relish = require('relish')({
+const Relish = require('relish2')({
   messages: {}
 })
 

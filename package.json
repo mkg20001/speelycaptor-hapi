@@ -35,17 +35,17 @@
     "nyc": "*"
   },
   "dependencies": {
-    "@hapi/boom": "^9.1.2",
-    "@hapi/hapi": "^20.1.2",
-    "@hapi/inert": "^6.0.3",
-    "@hapi/joi": "^17.1.1",
+    "@hapi/boom": "^9.1.4",
+    "@hapi/hapi": "^20.2.0",
+    "@hapi/inert": "^6.0.4",
+    "joi": "^17.4.2",
     "hapi-pino": "^8.3.0",
     "hapi-sentry": "^3.2.0",
     "mkdirp": "^1.0.4",
-    "mkg-bin-gen": "^0.1.4",
-    "mkgs-tool": "^0.1.15",
-    "pino": "^6.11.3",
-    "relish": "^3.0.0",
+    "mkg-bin-gen": "^0.1.9",
+    "mkgs-tool": "^0.1.20",
+    "pino": "^6.13.2",
+    "relish2": "^3.0.2",
     "rimraf": "^3.0.2"
   }
 }

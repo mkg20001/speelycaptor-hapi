@@ -1,0 +1,42 @@
+{
+  "nodes": {
+    "nix-node-package": {
+      "locked": {
+        "lastModified": 1631348881,
+        "narHash": "sha256-bG/wwzf14M1aCNVaL/KD1F+3uiY734d6G23g4eLWBI8=",
+        "owner": "mkg20001",
+        "repo": "nix-node-package",
+        "rev": "7e149259a3ff32b68dff3ddcb697a906b03e2bca",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mkg20001",
+        "ref": "master",
+        "repo": "nix-node-package",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1632238957,
+        "narHash": "sha256-63B3/vHl7dgP4Bo56G3w8eESgiB9VB+rOGp4kXQjkPs=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "02378673ac3ac563ab419f78b5db60e30f103162",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nix-node-package": "nix-node-package",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

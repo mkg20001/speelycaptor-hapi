@@ -5,7 +5,7 @@
 const path = require('path')
 const os = require('os')
 
-const Joi = require('@hapi/joi')
+const Joi = require('joi')
 
 require('mkg-bin-gen')(
   'speelycaptor',

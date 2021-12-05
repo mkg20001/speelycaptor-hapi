@@ -36,15 +36,15 @@
   },
   "dependencies": {
     "@hapi/boom": "^9.1.4",
-    "@hapi/hapi": "^20.2.0",
+    "@hapi/hapi": "^20.2.1",
     "@hapi/inert": "^6.0.4",
-    "joi": "^17.4.2",
-    "hapi-pino": "^8.3.0",
+    "joi": "^17.5.0",
+    "hapi-pino": "^9.0.0",
     "hapi-sentry": "^3.2.0",
     "mkdirp": "^1.0.4",
     "mkg-bin-gen": "^0.1.9",
-    "mkgs-tool": "^0.1.20",
-    "pino": "^6.13.2",
+    "mkgs-tool": "^0.1.21",
+    "pino": "^7.5.1",
     "relish2": "^3.0.2",
     "rimraf": "^3.0.2"
   }

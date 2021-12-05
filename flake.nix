@@ -1,9 +1,8 @@
 {
   description = "speelycaptor";
 
-  inputs = {
-    nix-node-package.url = "github:mkg20001/nix-node-package/master";
-  };
+  inputs.nix-node-package.url = "github:mkg20001/nix-node-package/master";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
   outputs = { self, nixpkgs, nix-node-package }:
 
